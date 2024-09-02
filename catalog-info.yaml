@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: carts-dynamodb
+  annotations:
+    github.com/project-slug: gy-org/carts-dynamodb
+    backstage.io/kubernetes-label-selector: 'app=carts-dynamodb'
+  description: carts-dynamodb created
+spec:
+  type: service
+  owner: user:guest
+  lifecycle: experimental
+  # dependsOn:
+  #   - resource:crossplane-eks-demo-05
