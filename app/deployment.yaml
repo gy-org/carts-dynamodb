@@ -1,19 +1,85 @@
+# Source: carts/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: carts
+  labels:
+    helm.sh/chart: carts-0.0.1
+    app.kubernetes.io/name: carts
+    app.kubernetes.io/instance: carts
+    app.kubernetes.io/component: service
+    app.kuberneres.io/owner: retail-store-sample
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: carts/templates/configmap.yml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: carts
+data:
+  SPRING_PROFILES_ACTIVE: dynamodb
+  CARTS_DYNAMODB_TABLENAME: Items
+  CARTS_DYNAMODB_CREATETABLE: "false"
+  CARTS_DYNAMODB_CREATETABLE: "true"
+  AWS_ACCESS_KEY_ID: key
+  AWS_SECRET_ACCESS_KEY: secret
+  CARTS_DYNAMODB_ENDPOINT: http://carts-dynamodb:8000
+---
+# Source: carts/templates/dynamodb-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${APP_NAME}
+  labels:
+    helm.sh/chart: carts-0.0.1
+    app.kubernetes.io/name: carts
+    app.kubernetes.io/instance: carts
+    app.kubernetes.io/component: dynamodb
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: dynamodb
+      protocol: TCP
+      name: dynamodb
+  selector:
+    app.kubernetes.io/name: carts
+    app.kubernetes.io/instance: carts
+    app.kubernetes.io/component: dynamodb
+---
+# Source: carts/templates/dynamodb-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ${APP_NAME}
+  labels:
+    helm.sh/chart: carts-0.0.1
+    app.kubernetes.io/name: carts
+    app.kubernetes.io/instance: carts
+    app.kubernetes.io/component: dynamodb
+    app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: ${APP_NAME}
+      app.kubernetes.io/name: carts
+      app.kubernetes.io/instance: carts
+      app.kubernetes.io/component: dynamodb
   template:
     metadata:
       labels:
         app: ${APP_NAME}
+        app.kubernetes.io/name: carts
+        app.kubernetes.io/instance: carts
+        app.kubernetes.io/component: dynamodb
     spec:
       containers:
-      - name: app
-        image: "${IMAGE}"
-        ports:
-        - containerPort: 80
+        - name: dynamodb
+          image: "amazon/dynamodb-local:1.13.1"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: dynamodb
+              containerPort: 8000
+              protocol: TCP
